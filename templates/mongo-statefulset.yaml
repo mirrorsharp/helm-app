@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.mongo.name }}
+spec:
+  serviceName: {{ .Values.mongo.name }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.mongo.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.mongo.name }}
+    spec:
+      containers:
+      - name: mongo
+        image: "{{ .Values.mongo.image }}:{{ .Values.mongo.tag }}"
+        {{- if .Values.mongo.resources.enabled }}
+        resources:
+          requests:
+            memory: {{ .Values.mongo.resources.requests.memory }}
+            cpu: {{ .Values.mongo.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.mongo.resources.limits.memory }}
+            cpu: {{ .Values.mongo.resources.limits.cpu }}
+        {{- end }}
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - name: mongo-persistent-storage
+          mountPath: /data/db
+        - name: mongodb-auth
+          mountPath: /etc/mongo-auth
+          readOnly: true
+      volumes:
+      - name: mongo-persistent-storage
+        persistentVolumeClaim:
+          claimName: mongo-pvc
+      - name: mongodb-auth
+        secret:
+          secretName: mongo

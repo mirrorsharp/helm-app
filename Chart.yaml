@@ -1,0 +1,9 @@
+apiVersion: v2
+name: mleshchenko-app
+description: A Python application with with MongoDB
+
+type: application
+
+version: 1.0.1
+
+appVersion: "1.0.1"

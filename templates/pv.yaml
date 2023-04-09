@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.pv.name }}
+spec:
+  capacity:
+    storage: {{ .Values.pv.storage }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: {{ .Values.pv.reclaimPolicy }}
+  claimRef:
+    namespace: mleshchenko
+    name: {{ .Values.pvc.name }}
+  storageClassName: {{ .Values.pvc.storageClass }}
+  hostPath:
+    path: /mnt/data/mongodb

@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.name }}
+  labels:
+    app: {{ .Values.app.name }}
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.app.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app.name }}
+    spec:
+      initContainers:
+        - name: wait-for-mongodb
+          image: alpine:3.17.2
+          command: ['sh', '-c', 'until nc -zv mongo 27017; do sleep 5; done;']
+      containers:
+      - name: application
+        image: "{{ .Values.app.image }}:{{ .Values.app.tag }}"
+        {{- if .Values.app.resources.enabled }}
+        resources:
+          requests:
+            memory: {{ .Values.app.resources.requests.memory }}
+            cpu: {{ .Values.app.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.app.resources.limits.memory }}
+            cpu: {{ .Values.app.resources.limits.cpu }}
+        {{- end }}
+        ports:
+        - containerPort: 5000
+          name: http-web-svc
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: http-web-svc
+          initialDelaySeconds: 10
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /healthx
+            port: http-web-svc
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 10
+        env:
+            - name: MONGO_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: application
+                  key: MONGO_HOST
+            - name: MONGO_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: application
+                  key: MONGO_PORT
+            - name: BG_COLOR
+              valueFrom:
+                configMapKeyRef:
+                  name: application
+                  key: BG_COLOR
+            - name: FAIL_FLAG
+              valueFrom:
+                configMapKeyRef:
+                  name: application
+                  key: FAIL_FLAG
+      volumes:
+      imagePullSecrets:
+      - name: docker-secret
+

@@ -1,0 +1,5 @@
+1. Access the application local URL by running these command:
+  
+  minikube tunnel
+
+  Also make sure you have added local domain name to hosts file as 127.0.0.1 <your_domain_name>
