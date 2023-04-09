@@ -25,7 +25,7 @@ ingress:
 pvc:
   name: mongo-pvc
   storage: 500Mi
-  storageClass: mongo-storage
+  storageClass: local-path
 
 mongo:
   name: mongo
